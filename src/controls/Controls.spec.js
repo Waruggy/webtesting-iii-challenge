@@ -1,25 +1,67 @@
 import React from "react";
-import { render, fireEvent } from "react-testing-library";
-import "jest-dom/extend-expect";
-import "react-testing-library/cleanup-after-each";
+import renderer from "react-test-renderer";
+import { render, fireEvent } from "@testing-library/react";
+import 'react-testing-library/cleanup-after-each';
 
- import Controls from "./Controls.js";
+import Controls from './Controls'
 
- describe("<Controls />", () => {
-  it("button is disabled", () => {
-    const { getByText, getByTestId, container } = render(
-      <Controls locked={true} closed={true} />
-    );
+describe("<Controls />", () => {
+    it('renders at all', () => {
+        render(<Controls />)
+    });
+})
 
-     const disabledButton = getByText(/disabled/i);
+describe("Control button", () => {
+    const controlsDefault = render(<Controls />)
+    it('renders buttons for unlocked', () => {
+        const closeSpy = jest.fn()
+        const lockSpy = jest.fn()
 
+        const { getByText } = render (<Controls closed={false} locked={false} toggleClosed={closeSpy} toggleLocked={lockSpy}/>)
+        const closeBut = getByText(/close gate/i)
+        const lockBut = getByText(/lock gate/i)
 
-     expect(getByTestId(container, disabledButton)).toBeDisabled();
+        expect(closeBut.disabled).toBeFalsy()
+        expect(lockBut.disabled).toBeTruthy()
 
-     expect(disabledButton).toHaveAttribute("disabled");
-  });
+        fireEvent.click(closeBut)
+        expect(closeSpy).toBeCalled()
 
-   it("unmounts component after each test", () => {
-    console.log(document.body.outerHTML);
-  });
-}); 
+        fireEvent.click(lockBut)
+        expect(lockSpy).not.toBeCalled()
+    });
+    it('renders buttons for unlocked', () => {
+        const closeSpy = jest.fn()
+        const lockSpy = jest.fn()
+
+        const { getByText } = render (<Controls closed={true} locked={false} toggleClosed={closeSpy} toggleLocked={lockSpy}/>)
+        const closeBut = getByText(/open gate/i)
+        const lockBut = getByText(/lock gate/i)
+
+        expect(closeBut.disabled).toBeFalsy()
+        expect(lockBut.disabled).toBeFalsy()
+
+        fireEvent.click(closeBut)
+        expect(closeSpy).toBeCalled()
+
+        fireEvent.click(lockBut)
+        expect(lockSpy).toBeCalled()
+    });
+    it('renders the right buttons for locked / closed', () => {
+        const closeSpy = jest.fn()
+        const lockSpy = jest.fn()
+
+        const { getByText } = render (<Controls closed={true} locked={true} toggleClosed={closeSpy} toggleLocked={lockSpy}/>)
+        const closeBut = getByText(/open gate/i)
+        const lockBut = getByText(/unlock gate/i)
+
+        expect(closeBut.disabled).toBeTruthy()
+        expect(lockBut.disabled).toBeFalsy()
+
+        fireEvent.click(closeBut)
+        expect(closeSpy).not.toBeCalled()
+
+        fireEvent.click(lockBut)
+        expect(lockSpy).toBeCalled()
+    });
+}) 

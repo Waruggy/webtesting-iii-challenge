@@ -1,44 +1,54 @@
 import React from "react";
-import { render, fireEvent } from "react-testing-library";
-import "jest-dom/extend-expect";
-import "react-testing-library/cleanup-after-each";
+import renderer from "react-test-renderer"; 
+import { render } from "@testing-library/react";
+import 'react-testing-library/cleanup-after-each';
 
- import Dashboard from "./Dashboard.js";
+import Display from './Display'
 
- describe("<Dashboard />", () => {
-  it("renders close, open and lock, unlock status", () => {
-    const { getByText, debug } = render(<Dashboard />);
-    debug();
+describe("<Display />", () => {
+    it('renders at all', () => {
+        render(<Display />)
+    });
+})
 
-     getByText(/lock/i);
-    getByText(/close/i);
-    getByText(/open/i);
-    getByText(/unlocked/i);
-  });
+describe("Display state tests based on props", () => {
 
-   it("renders the display", () => {
-    const { getByTestId } = render(<Dashboard />);
-    const display = getByTestId("display");
-    expect(display).toHaveClass("display panel");
-  });
+    it('shows unlocked/open', () => {
+        const display = render(<Display locked={false} closed={false}/>)
+        expect(display.getByText('Unlocked'))
+        expect(display.getByText('Open'))
 
-   it("renders the controls", () => {
-    const { getByTestId } = render(<Dashboard />);
-    const controls = getByTestId("controls");
-    expect(controls).toHaveClass("controls panel");
-  });
+        const unlocked = display.getByText('Unlocked');
+        const open = display.getByText('Open');
+        expect(unlocked.className).toMatch('led green-led')
+        expect(open.className).toMatch('led green-led')
+    });
 
-   it("renders display and controls", () => {
-    const { getByTestId } = render(<Dashboard />);
+    it('shows unlocked/closed', () => {
+        const display = render(<Display locked={false} closed={true}/>)
+        expect(display.getByText('Unlocked'))
+        expect(display.getByText('Closed'))
 
-     const display = getByTestId("display");
-    const controls = getByTestId("controls");
+        const unlocked = display.getByText('Unlocked');
+        const closed = display.getByText('Closed');
+        expect(unlocked.className).toMatch('led green-led')
+        expect(closed.className).toMatch('led red-led')
+    });
 
-     expect(display).toBeInTheDocument();
-    expect(controls).toBeInTheDocument();
-  });
+    it('shows locked/closed', () => {
+        const display = render(<Display locked={true} closed={true}/>)
+        expect(display.getByText('Locked'))
+        expect(display.getByText('Closed'))
 
-   it("unmounts component after each test", () => {
-    console.log(document.body.outerHTML);
-  });
-});
+        const locked = display.getByText('Locked');
+        const closed = display.getByText('Closed');
+        expect(locked.className).toMatch('led red-led')
+        expect(closed.className).toMatch('led red-led')
+    });
+
+    it('DOES NOT ever show locked/open', () => {
+        const display = render(<Display locked={true} closed={true}/>)
+        expect(display.queryByText('Locked')).toBeTruthy()
+        expect(display.queryByText('Open')).toBeFalsy()
+    });
+}) 

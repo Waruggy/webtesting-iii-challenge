@@ -1,52 +1,54 @@
 import React from "react";
-import { render, fireEvent } from "react-testing-library";
-import "jest-dom/extend-expect";
-import "react-testing-library/cleanup-after-each";
+import Display from "./Display";
+import renderer from "react-test-renderer";
+import { render, fireEvent } from "@testing-library/react";
 
- import Display from "./Display.js";
-
- describe("<Display />", () => {
-  it("should use red-led class when locked", () => {
-    const { getByText } = render(<Display locked={true} />);
-
-     const lockedDisplay = getByText(/locked/i);
-
-     expect(lockedDisplay).toHaveClass("red-led");
-
-     expect(lockedDisplay).toHaveTextContent(/locked/i);
+describe("<Display />", () => {
+  it("matches snapshot", () => {
+    const tree = renderer.create(<Display />).toJSON();
+    expect(tree).toMatchSnapshot();
   });
-
-   it("should use green-led class when unlocked", () => {
-    const { getByText } = render(<Display locked={false} />);
-
-     const lockedDisplay = getByText(/unlocked/i);
-
-     expect(lockedDisplay).toHaveClass("green-led");
-
-     expect(lockedDisplay).toHaveTextContent(/unlocked/i);
+  it("renders without crashing", () => {
+    render(<Display />);
   });
-
-   it("should use red-led class when closed", () => {
-    const { getByText } = render(<Display closed={true} />);
-
-     const closedDisplay = getByText(/closed/i);
-
-     expect(closedDisplay).toHaveClass("red-led");
-
-     expect(closedDisplay).toHaveTextContent(/closed/i);
+  it("open and unlocked", () => {
+    const { getByText } = render(<Display closed={false} locked={false} />);
+    getByText(/Unlocked/);
+    getByText(/Open/);
   });
-
-   it("should use green-led class when open", () => {
-    const { getByText } = render(<Display closed={false} />);
-
-     const closedDisplay = getByText(/open/i);
-
-     expect(closedDisplay).toHaveClass("green-led");
-
-     expect(closedDisplay).toHaveTextContent(/open/i);
+  it("closed and locked", () => {
+    const { getByText } = render(<Display closed={true} locked={true} />);
+    getByText(/Locked/);
+    getByText(/Closed/);
   });
-
-   it("unmounts component after each test", () => {
-    console.log(document.body.outerHTML);
+  it("displays Closed if the closed prop is true and Open if otherwise", () => {
+    let { getByText } = render(<Display locked={false} closed={true} />);
+    getByText(/Closed/);
+  });
+  it("displays Closed if the closed prop is true and Open if otherwise", () => {
+    let { getByText } = render(<Display locked={false} closed={false} />);
+    getByText(/Open/);
+  });
+  it("displays Locked if the locked prop is true and Unlocked if otherwise", () => {
+    let { getByText } = render(<Display locked={true} closed={true} />);
+    getByText(/Locked/);
+  });
+  it("displays Locked if the locked prop is true and Unlocked if otherwise", () => {
+    let { getByText } = render(<Display locked={false} closed={true} />);
+    getByText(/Unlocked/);
+  });
+  it("when locked or closed use the red-led class", () => {
+    const { getByText } = render(<Display locked={true} closed={true} />);
+    const closed = getByText(/Closed/);
+    const locked = getByText(/Locked/);
+    expect(closed.classList.contains('red-led')).toBeTruthy();
+    expect(locked.classList.contains('red-led')).toBeTruthy();
+  });
+  it("when unlocked or open use the green-led class", () => {
+    const { getByText } = render(<Display locked={false} closed={false} />);
+    const unlocked = getByText(/Unlocked/);
+    const open = getByText(/Open/);
+    expect(unlocked.classList.contains('green-led')).toBeTruthy();
+    expect(open.classList.contains('green-led')).toBeTruthy();
   });
 }); 
